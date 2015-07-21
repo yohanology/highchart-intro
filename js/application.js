@@ -1,35 +1,9 @@
 $(document).ready(function(){
-  var newDate;
-  var price;
-  var newData = [];
+  var HighCharts = function(){
+    this.graphData = [];
+  };
 
-  function makeAjaxRequest(url, data) {
-    var request = {
-      type: "GET",
-      url: url, 
-      dataType: "JSON",
-      success: function(response){
-        response.data.forEach(function(item){
-          newDate = new Date(item[0]);
-          price = item[1];
-
-          data.unshift({ x: newDate, y: price });
-        });
-
-        console.log(data);
-
-        initializeHighChart();
-      }
-    };
-
-    $.ajax(request);
-  }
-
-  makeAjaxRequest("https://www.quandl.com/api/v1/datasets/BTS_MM/RETAILGAS.json?auth_token=E6kNzExHjay2DNP8pKvB", newData);
-  // makeAjaxRequest("my-second-url", newData2);
-  // makeAjaxRequest("my-3rd-url", newData3);
-
-  function initializeHighChart(){
+  HighCharts.prototype.graphChart = function(){
     var highchartConfig = {
       title: {
         text: 'Average retail gas prices'
@@ -42,10 +16,42 @@ $(document).ready(function(){
       },
       series: [{
         name: 'US',
-        data: newData
+        data: this.graphData
       }]
     };
 
     $('#chart').highcharts(highchartConfig);
-  }
+  };
+
+  HighCharts.prototype.makeAjaxRequest = function(url){
+    this.callbackFunction = function(response){
+      var date;
+      var price;
+      var items = response.data;
+      var item;
+
+      for(var i = 0; i < items.length; i++){
+        item = items[i];
+        date = new Date(item[0]);
+        price = item[1];
+        this.graphData.unshift({ x: date, y: price });
+      };
+
+      this.graphChart();
+    };
+
+    var request = {
+      context: this,
+      type: "GET",
+      url: url,
+      dataType: "JSON",
+      success: this.callbackFunction
+    };
+
+    $.ajax(request);
+  };
+
+  var url = "https://www.quandl.com/api/v1/datasets/BTS_MM/RETAILGAS.json?auth_token=E6kNzExHjay2DNP8pKvB";
+  var chart = new HighCharts();
+  chart.makeAjaxRequest(url);
 });
