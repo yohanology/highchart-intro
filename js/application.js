@@ -1,59 +1,65 @@
 
 $(document).ready(function(){
 
-	var Charts = function(){
-    this.graphData = [];
-	};
+var Chart = function(){
+  this.graphData = [];
+};
 
-	Charts.prototype.makeAjaxRequest = function(){
-		$.ajax({
-      context: this,
-			type: 'GET',
-			url: 'https://www.quandl.com/api/v1/datasets/BTS_MM/RETAILGAS.json?auth_token=E6kNzExHjay2DNP8pKvB',
-			success: function(response){
-        var items = response.data;
-        var item;
+Chart.prototype.makeAjaxRequest = function(){
 
-        for (var i=0; i < items.length; i++) {
-          item = items[i];
-          this.graphData.push({
-            x: new Date(item[0]),
-            y: item[1]
-          });
-        }
+  $.ajax({
+    context: this,
+    type: 'GET',
+    url: 'https://www.quandl.com/api/v1/datasets/BAVERAGE/USD.json?auth_token=E6kNzExHjay2DNP8pKvB',
+    success: function(response){
+      
+      var items = response.data;
+      var item;
 
-        console.log(this.graphData)
-        this.graph();
-			}
-		});
-	};
+      for(var i = 0; i < items.length; i++) {
+        
+        item = items[i];
+        
+        this.graphData.push({
+          x: new Date(item[0]),
+          y: item[1]
+        });
 
-  Charts.prototype.graph = function(){
-    var highchartConfig = {
-      title: {
-        text: 'Average retail gas prices'
-      },
-      subtitle: {
-        text: 'Bureau of Transportation Statistics (Multimodal)'
-      },
-      xAxis: {
-        type: 'dateTime'
-      },
-      series: [
-        {
-          name: 'US',
-          data: this.graphData.reverse()
-        }
-      ]
-    };
+      }
 
-    $('#chart').highcharts(highchartConfig);
-  }
+      console.log(this.graphData);
+      this.graph();
+    }
+  });
+}
 
-	// Instance
-	var chart = new Charts();
-	chart.makeAjaxRequest();
+Chart.prototype.graph = function(){
+  var highchartConfig = {
+    title: {
+      text: 'USD/Bitcoin Average Price'
+    },
+    subtitle: {
+      text: 'Aggregated bitcon price index from multiple exchanges providing a weighted average bitcoin price'
+    },
+    xAxis: {
+      type: 'datetime'
+    },
+    series: [
+      {
+        turboThreshold: 0,
+        name: 'Bitcoin price',
+        data: this.graphData.reverse()
+      }
+    ]
+    }
+  $('#chart').highcharts(highchartConfig);
+};
 
+
+
+
+var bitcoinChart = new Chart();
+bitcoinChart.makeAjaxRequest();
 
 
 });
